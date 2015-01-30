@@ -1,12 +1,12 @@
 from psychopy import visual, event, core, data
-from shapes import taskTrials, pracTrials
+from shapes import taskTrials, pracTrials, pracList
 import random
 
-win = visual.Window(fullscr = True, units = 'deg', monitor = 'testMonitor', color = 'lightgrey')
+win = visual.Window(fullscr = True, units = 'deg', color='lightgrey', monitor = 'testMonitor')
 win.setRecordFrameIntervals()
 mouse = event.Mouse(win = win)
 mouse.setVisible(False)
-refresh_HZ = 100
+refresh_HZ = 60
 refresh_rate = 1./refresh_HZ
 frameMargin = 2*10**(-3)
 pre_flip_time = refresh_rate - frameMargin 
@@ -47,8 +47,8 @@ def loadStims(win, stims, posList, textStims, rectStims, loadOnly = False):
             if stim in OVALS: textStims[ii].setSize((2.5, 2.5))
             else: textStims[ii].setSize((2.5,2.5))
             textStims[ii].setTex('stims/'+stim+'.png')
-            print stims
-            print(stim in OVALS)
+            #print stims
+            #print(stim in OVALS)
         else:  
             rectStims[ii].setFillColor(stim)
             rectStims[ii].setLineColor(stim)
@@ -102,7 +102,7 @@ def instructions(pracTrials):
 
 Your job is to remember the items presented on the screen, as well as their location.
 
-Items will be either colored squares or shapes.
+Items will be shapes with different patterns inside of them.
 
 
 Hit spacebar to continue'''
@@ -148,14 +148,9 @@ Hit spacebar to continue to the actual task'''
                                 (8.5, 0.4),
                                 (-1.7, 0.8)]
     examplePos2 = [(7.2, -3.9),
-                                (0.8, 0.2),
-                                (-3.5, 2.7),
-                                (-7.3, -2.9)]
+                                (0.8, 0.2)]
     Text.setAutoDraw(True)
     flipandwait(win, viewTime = 4)
-    waitResponse(maxWait = None, clock = None, reset = True, keyList = ['space'])
-    Text.setText(text_2)
-    flipandwait(win,  viewTime = .5)
     waitResponse(maxWait = None, clock = None, reset = True, keyList = ['space'])
     Text.setAutoDraw(False)
     #Examples of item presentation
@@ -166,20 +161,49 @@ Hit spacebar to continue to the actual task'''
     Text.draw()
     flipandwait(win, viewTime = .5)
     waitResponse(maxWait = None, clock = None, reset = True, keyList = ['space'])
-    loadStims(win, ['P', 'A', 'B', 'R'], examplePos2, textStims, rectStims)
-    drawStims(win, ['P', 'A', 'B', 'R'], examplePos2, textStims, rectStims)
-    flipandwait(win, viewTime = 1.5)
+    loadStims(win, ['A', 'B', 'P','Q'], examplePos1, textStims, rectStims)
+    drawStims(win, ['A', 'B', 'P', 'Q'], examplePos1, textStims, rectStims)
+    flipandwait(win, viewTime = 4)
     #Run-through a full example
     Text.setText(text_4)
     Text.draw()
     flipandwait(win, viewTime =  3)
     waitResponse(maxWait = None, clock = None, reset = True, keyList = ['space'])
-    #Practice
+    repeat = True
+    #Small change example
+    while repeat:
+        resp, rt = runTrial(win, core.Clock(), ['A','B'], examplePos2, ['B'], [examplePos2[0]], 
+                            fixationStim = None, fixation_on_time = .75, fixation_off_time = .25,
+                            view_stims_time = 1.5, stims_memory_time = .5, header = True)
+        Text.setText("This was a SMALL change")
+        Text.draw()
+        flipandwait(win, viewTime = 3)
+        if resp in ['slash']: repeat = False
+    #Large change example
+    repeat = True
+    while repeat:
+        resp, rt = runTrial(win, core.Clock(), ['A','B'], examplePos2, ['P'], [examplePos2[1]], 
+                            fixationStim = None, fixation_on_time = .75, fixation_off_time = .25,
+                            view_stims_time = 1.5, stims_memory_time = .5, header = True)
+        Text.setText("This was a LARGE change")
+        Text.draw()
+        flipandwait(win, viewTime = 3)
+        if resp in ['slash']: repeat = False
+#No change example
+    repeat = True
+    while repeat:
+        resp, rt = runTrial(win, core.Clock(), ['P','B'], examplePos2, ['B'], [examplePos2[1]], 
+                            fixationStim = None, fixation_on_time = .75, fixation_off_time = .25,
+                            view_stims_time = 1.5, stims_memory_time = .5, header = True)
+        Text.setText("There was NO CHANGE")
+        Text.draw()
+        flipandwait(win, viewTime = 3)
+        if resp in ['z']: repeat = False
+#Practice
     #Text.setText(text_5)
     #Text.draw()
     #flipandwait(win, viewTime = 1)
     #waitResponse(maxWait = None, clock = None, reset = True, keyList = ['space'])
-    runTask(pracTrials)
     Text.setText(text_6)
     Text.draw()
     flipandwait(win, viewTime = 1)
@@ -224,7 +248,8 @@ def runTask(taskTrials, append = True, header = True):
     taskTrials.saveAsWideText('data/all', appendFile = append, matrixOnly = True) 
     taskTrials.saveAsWideText('data/' + str(thisTrial['Subject']), appendFile = append, matrixOnly = not header) 
     
-#instructions(pracTrials)
+
+instructions(pracTrials)
 for trials in taskTrials:
     runTask(trials, header = False)
 
